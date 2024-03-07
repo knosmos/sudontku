@@ -1,3 +1,4 @@
+// HTML elements
 let VIDEO_ELEM = document.getElementById("camera-feed");
 let CANVAS_ELEM = document.getElementById("camera-canvas");
 let PHOTO_ELEM = document.getElementById("camera-image-raw");
@@ -6,10 +7,12 @@ let PROCESSED_IMAGE_ELEM = document.getElementById("camera-image-processed");
 let BOUNDED_PROCESSED_ELEM = document.getElementById("canvas-bounded-processed");
 let TRANSFORMED_ELEM = document.getElementById("canvas-transformed");
 
+// Video parameters
 let streaming = false;
 let width;
 let height;
 
+// Start the camera and set up the video feed; initialize the canvases and image elements
 function startup() {
     video = VIDEO_ELEM;
     canvas = CANVAS_ELEM;
@@ -57,6 +60,7 @@ function startup() {
     );
 }
 
+// Preprocess the image
 function preprocess() {
     // load image into OpenCV
     let src = cv.imread(PHOTO_ELEM);
@@ -82,6 +86,7 @@ function preprocess() {
     return binary;
 }
 
+// Get the contours of the binary image
 function getContours(binary) {
     let contours = new cv.MatVector();
     let hierarchy = new cv.Mat();
@@ -92,14 +97,7 @@ function getContours(binary) {
     return contours;
 }
 
-function drawContours(contours, src) {
-    for (let i = 0; i < contours.size(); ++i) {
-        let color = new cv.Scalar(255, 0, 0);
-        cv.drawContours(src, contours, i, color, 1, cv.LINE_8, hierarchy, 100);
-    }
-    return src;
-}
-
+// Draw the contour on the image
 function drawContour(contour, src) {
     let dst = new cv.Mat();
     cv.cvtColor(src, dst, cv.COLOR_GRAY2RGBA, 0);
@@ -111,28 +109,60 @@ function drawContour(contour, src) {
     return dst;
 }
 
+// find the largest square contour
 function getGridBounds(contours) {
-    // find the largest four-sided contour
     let bounds;
     let maxArea = 0;
+    let smoothing = 0.02; // smoothing factor
+    let edge_tolerance = 0.2; // tolerance for edge ratio
     for (let i = 0; i < contours.size(); ++i) {
         let perimeter = cv.arcLength(contours.get(i), true);
         let poly = new cv.Mat();
-        cv.approxPolyDP(contours.get(i), poly, 0.02 * perimeter, true);
-        if (poly.size().height == 4) {
-            let area = cv.contourArea(poly);
-            if (area > maxArea) {
-                maxArea = area;
-                bounds = poly;
+        cv.approxPolyDP(contours.get(i), poly, smoothing * perimeter, true);
+        if (poly.size().height == 4) { // check for four-sidedness
+            // detect square (this avoids detecting the paper/computer's edges)
+            let side_lengths = [];
+            for (let j = 0; j < 4; ++j) {
+                let x1 = poly.data32S[j * 2];
+                let y1 = poly.data32S[j * 2 + 1];
+                let x2 = poly.data32S[(j * 2 + 2) % 8];
+                let y2 = poly.data32S[(j * 2 + 3) % 8];
+                let side = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                side_lengths.push(side);
+            }
+            
+            // check for squareness
+            let min_side = Math.min(...side_lengths);
+            let max_side = Math.max(...side_lengths);
+            let ratio = min_side / max_side;
+            if (ratio < 1 + edge_tolerance && ratio > 1 - edge_tolerance) {
+                let area = cv.contourArea(poly); // check for largest area
+                if (area > maxArea) {
+                    maxArea = area;
+                    bounds = poly;
+                }
             }
         }
     }
     return bounds;
 }
 
+// perspective transformation
 function transform(src, bounds) {
     let dst = cv.Mat.zeros(252, 252, src.type());
-    let pts1 = cv.matFromArray(4, 1, cv.CV_32FC2, [bounds.data32S[0], bounds.data32S[1], bounds.data32S[2], bounds.data32S[3], bounds.data32S[4], bounds.data32S[5], bounds.data32S[6], bounds.data32S[7]]);
+
+    // find and order corners
+    let corners = [];
+    for (let i = 0; i < 4; ++i) {
+        corners.push([bounds.data32S[i * 2], bounds.data32S[i * 2 + 1]]);
+    }
+    corners.sort((a, b) => a[0] - b[0]);
+    let left = corners.slice(0, 2);
+    let right = corners.slice(2, 4);
+    left.sort((a, b) => a[1] - b[1]);
+    right.sort((a, b) => a[1] - b[1]);
+
+    let pts1 = cv.matFromArray(4, 1, cv.CV_32FC2, [right[0][0], right[0][1], right[1][0], right[1][1], left[1][0], left[1][1], left[0][0], left[0][1]]);
     let pts2 = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, 0, 252, 252, 252, 252, 0]);
     let M = cv.getPerspectiveTransform(pts1, pts2);
     cv.warpPerspective(src, dst, M, dst.size(), cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
@@ -144,6 +174,7 @@ function transform(src, bounds) {
     return flipped;
 }
 
+// take a frame from the video feed
 function takeFrame() {
     CANVAS_ELEM.getContext("2d").drawImage(VIDEO_ELEM, 0, 0, width, height);
     let data = CANVAS_ELEM.toDataURL("image/png");
