@@ -251,20 +251,27 @@ function detectDigit(src) {
 }
 
 // draw the digits on the image
-function drawDigits(src, digits) {
+function drawDigits(src, digits, original) {
     let font = cv.FONT_HERSHEY_SIMPLEX;
     let color = new cv.Scalar(255, 0, 0, 255);
+    let color2 = new cv.Scalar(0, 255, 0, 255);
     for (let i = 0; i < 9; ++i) {
         for (let j = 0; j < 9; ++j) {
             let digit = digits[i * 9 + j];
-            cv.putText(src, digit.toString(), new cv.Point(i * cellsize + 10, j * cellsize + 40), font, 1, color, 2, cv.LINE_AA, false);
+            let c;
+            if (original[i * 9 + j] != 0) {
+                c = color2;
+            } else {
+                c = color;
+            }
+            cv.putText(src, digit.toString(), new cv.Point(i * cellsize + 10, j * cellsize + 40), font, 1, c, 2, cv.LINE_AA, false);
         }
     }
 }
 
 // sudoku solving (backtracker)
 function solve(board) {
-    console.log(board);
+    // console.log(board);
     let i = 0;
     while (i < 81) {
         if (board[i] == 0) {
@@ -277,6 +284,7 @@ function solve(board) {
                     }
                 }
             }
+            board[i] = 0;
             return false;
         }
         i++;
@@ -327,10 +335,11 @@ function runCapture() {
     let transformed = transform(binary, bounds);
     transformed_rgb = new cv.Mat();
     cv.cvtColor(transformed, transformed_rgb, cv.COLOR_RGBA2RGB, 0);
-    board = detectDigits(transformed)
-    drawDigits(transformed_rgb, board);
+    board = detectDigits(transformed);
+    let original = [...board];
+    solve(board);
+    drawDigits(transformed_rgb, board, original);
     cv.imshow(TRANSFORMED_ELEM, transformed_rgb);
-    console.log(solve(board));
     transformed.delete();
     transformed_rgb.delete();
 }
