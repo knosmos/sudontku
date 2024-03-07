@@ -7,6 +7,8 @@ let PROCESSED_IMAGE_ELEM = document.getElementById("camera-image-processed");
 let BOUNDED_PROCESSED_ELEM = document.getElementById("canvas-bounded-processed");
 let TRANSFORMED_ELEM = document.getElementById("canvas-transformed");
 
+let CAPTURE_BUTTON = document.getElementById("capture-button");
+
 // Video parameters
 let streaming = false;
 let width;
@@ -20,14 +22,31 @@ function startup() {
     video = VIDEO_ELEM;
     canvas = CANVAS_ELEM;
 
+    console.log("Trying back camera");
     navigator.mediaDevices
-        .getUserMedia({ video: true, audio: false })
+        .getUserMedia({ video: {
+            facingMode: {
+                exact: "environment"
+            }
+        }, audio: false })
         .then((stream) => {
             video.srcObject = stream;
             video.play();
+            console.log("Loaded back camera feed");
         })
         .catch((err) => {
-            console.error(`An error occurred: ${err}`);
+            console.log("Front camera fallback");
+            navigator.mediaDevices
+                .getUserMedia({ video: true, audio: false })
+                .then((stream) => {
+                    video.srcObject = stream;
+                    video.play();
+                    console.log("Loaded front camera feed");
+                })
+                .catch((err) => {
+                    console.error(`An error occurred: ${err}`);
+                });
+            
         });
 
     video.addEventListener(
@@ -203,7 +222,7 @@ function detectDigits(src) {
 // detect single digit from cell slice
 function detectDigit(src) {
     scores = [];
-    for (let i=0; i<10; i++) {
+    for (let i=1; i<10; i++) {
         let digit = cv.imread(document.getElementById(`digit-${i}`));
         let result = new cv.Mat();
 
@@ -212,13 +231,23 @@ function detectDigit(src) {
         digit.delete();
 
         cv.matchTemplate(src, digit_cvt, result, cv.TM_CCOEFF_NORMED, new cv.Mat());
-        let avg = cv.mean(result)[0];
+
+        // imshow matching result
+        cv.imshow("result", result);
+
+        let minMax = cv.minMaxLoc(result);
+        let avg = minMax.maxVal;
+
         result.delete();
         digit_cvt.delete();
 
         scores.push(avg);
     }
-    return scores.indexOf(Math.max(...scores));
+    console.log(scores);
+    if (Math.max(...scores) < 0.2) {
+        return 0;
+    }
+    return scores.indexOf(Math.max(...scores)) + 1;
 }
 
 // draw the digits on the image
@@ -233,29 +262,79 @@ function drawDigits(src, digits) {
     }
 }
 
+// sudoku solving (backtracker)
+function solve(board) {
+    console.log(board);
+    let i = 0;
+    while (i < 81) {
+        if (board[i] == 0) {
+            for (let j = 1; j <= 9; j++) {
+                if (isValid(board, i, j)) {
+                    board[i] = j;
+                    let res = solve(board);
+                    if (res != false) {
+                        return res;
+                    }
+                }
+            }
+            return false;
+        }
+        i++;
+    }
+}
+
+function isValid(board, i, j) {
+    let row = Math.floor(i / 9);
+    let col = i % 9;
+    for (let k = 0; k < 9; k++) {
+        if (board[row * 9 + k] == j || board[k * 9 + col] == j) {
+            return false;
+        }
+    }
+    let startRow = Math.floor(row / 3) * 3;
+    let startCol = Math.floor(col / 3) * 3;
+    for (let k = startRow; k < startRow + 3; k++) {
+        for (let l = startCol; l < startCol + 3; l++) {
+            if (board[k * 9 + l] == j) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 // main loop
+let binary;
+let bounds;
+
 function cameraLoop() {
     takeFrame();
     PHOTO_ELEM.onload = () => {
-        let binary = preprocess();
-        let contours = getContours(binary);
-        let bounds = getGridBounds(contours);
+        binary = preprocess();
+        contours = getContours(binary);
+        bounds = getGridBounds(contours);
         
         let bounded_binary = drawContour(bounds, binary);
         cv.imshow(BOUNDED_PROCESSED_ELEM, bounded_binary);
 
-        if (bounds) {
-            let transformed = transform(binary, bounds);
-            //drawDigits(transformed, detectDigits(transformed));
-            cv.imshow(TRANSFORMED_ELEM, transformed);
-            transformed.delete();
-        }
-
         bounded_binary.delete();
-        binary.delete();
         contours.delete();
     };
 }
 
+let board;
+function runCapture() {
+    let transformed = transform(binary, bounds);
+    transformed_rgb = new cv.Mat();
+    cv.cvtColor(transformed, transformed_rgb, cv.COLOR_RGBA2RGB, 0);
+    board = detectDigits(transformed)
+    drawDigits(transformed_rgb, board);
+    cv.imshow(TRANSFORMED_ELEM, transformed_rgb);
+    console.log(solve(board));
+    transformed.delete();
+    transformed_rgb.delete();
+}
+
 startup();
 setInterval(cameraLoop, cellsize);
+CAPTURE_BUTTON.onclick = runCapture;
