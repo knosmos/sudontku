@@ -3,6 +3,7 @@ let CANVAS_ELEM = document.getElementById("camera-canvas");
 let PHOTO_ELEM = document.getElementById("camera-image-raw");
 let PROCESSED_ELEM = document.getElementById("camera-canvas-processed");
 let PROCESSED_IMAGE_ELEM = document.getElementById("camera-image-processed");
+let BOUNDED_PROCESSED_ELEM = document.getElementById("canvas-bounded-processed");
 
 let streaming = false;
 let width;
@@ -26,7 +27,7 @@ function startup() {
         "canplay",
         (ev) => {
             if (!streaming) {
-                width = 400;
+                width = 600;
                 height = Math.round(video.videoHeight / (video.videoWidth / width));
 
                 if (isNaN(height)) {
@@ -65,7 +66,7 @@ function preprocess() {
 
     // otsu thresholding
     let binary = new cv.Mat();
-    cv.threshold(gray, binary, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
+    cv.threshold(gray, binary, 150, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
 
     // display the processed image
     cv.imshow(PROCESSED_ELEM, binary);
@@ -74,6 +75,9 @@ function preprocess() {
     let data = PROCESSED_ELEM.toDataURL("image/png");
     PROCESSED_IMAGE_ELEM.src = data;
 
+    src.delete();
+    gray.delete();
+
     return binary;
 }
 
@@ -81,6 +85,8 @@ function getContours(binary) {
     let contours = new cv.MatVector();
     let hierarchy = new cv.Mat();
     cv.findContours(binary, contours, hierarchy, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE);
+
+    hierarchy.delete();
 
     return contours;
 }
@@ -93,22 +99,34 @@ function drawContours(contours, src) {
     return src;
 }
 
+function drawContour(contour, src) {
+    let dst = new cv.Mat();
+    cv.cvtColor(src, dst, cv.COLOR_GRAY2RGBA, 0);
+    
+    let color = new cv.Scalar(255, 0, 0, 255);
+    let vec = new cv.MatVector();
+    vec.push_back(contour);
+    cv.drawContours(dst, vec, 0, color, 2, 8, new cv.Mat(), 0);
+    return dst;
+}
+
 function getGridBounds(contours) {
     // find the largest four-sided contour
-    let bounds = [];
+    let bounds;
     let maxArea = 0;
     for (let i = 0; i < contours.size(); ++i) {
         let perimeter = cv.arcLength(contours.get(i), true);
-        let poly = new cv.MatVector();
+        let poly = new cv.Mat();
         cv.approxPolyDP(contours.get(i), poly, 0.02 * perimeter, true);
-        if (poly.size().size() == 4) {
-            let area = cv.contourArea(poly.get(0));
+        if (poly.size().height == 4) {
+            let area = cv.contourArea(poly);
             if (area > maxArea) {
                 maxArea = area;
-                bounds = poly.get(0);
+                bounds = poly;
             }
         }
     }
+    return bounds;
 }
 
 function transform(src, bounds) {
@@ -129,7 +147,16 @@ function takeFrame() {
 
 function cameraLoop() {
     takeFrame();
-    PHOTO_ELEM.onload = preprocess;
+    PHOTO_ELEM.onload = () => {
+        let binary = preprocess();
+        let contours = getContours(binary);
+        let bounds = getGridBounds(contours);
+        let bounded_binary = drawContour(bounds, binary);
+        cv.imshow(BOUNDED_PROCESSED_ELEM, bounded_binary);
+        bounded_binary.delete();
+        binary.delete();
+        contours.delete();
+    };
     //requestAnimationFrame(cameraLoop);
 }
 
