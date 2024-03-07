@@ -12,6 +12,9 @@ let streaming = false;
 let width;
 let height;
 
+// CV parameters
+let cellsize = 50;
+
 // Start the camera and set up the video feed; initialize the canvases and image elements
 function startup() {
     video = VIDEO_ELEM;
@@ -58,6 +61,14 @@ function startup() {
         },
         false,
     );
+}
+
+// take a frame from the video feed
+function takeFrame() {
+    CANVAS_ELEM.getContext("2d").drawImage(VIDEO_ELEM, 0, 0, width, height);
+    let data = CANVAS_ELEM.toDataURL("image/png");
+    let img = PHOTO_ELEM;
+    img.src = data;
 }
 
 // Preprocess the image
@@ -149,7 +160,7 @@ function getGridBounds(contours) {
 
 // perspective transformation
 function transform(src, bounds) {
-    let dst = cv.Mat.zeros(252, 252, src.type());
+    let dst = cv.Mat.zeros(cellsize * 9, cellsize * 9, src.type());
 
     // find and order corners
     let corners = [];
@@ -162,11 +173,13 @@ function transform(src, bounds) {
     left.sort((a, b) => a[1] - b[1]);
     right.sort((a, b) => a[1] - b[1]);
 
+    // build transformation matrix
     let pts1 = cv.matFromArray(4, 1, cv.CV_32FC2, [right[0][0], right[0][1], right[1][0], right[1][1], left[1][0], left[1][1], left[0][0], left[0][1]]);
-    let pts2 = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, 0, 252, 252, 252, 252, 0]);
+    let pts2 = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, 0, cellsize * 9, cellsize * 9, cellsize * 9, cellsize * 9, 0]);
     let M = cv.getPerspectiveTransform(pts1, pts2);
     cv.warpPerspective(src, dst, M, dst.size(), cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
 
+    // generate final image
     let flipped = new cv.Mat();
     cv.flip(dst, flipped, 1);
     dst.delete();
@@ -174,14 +187,53 @@ function transform(src, bounds) {
     return flipped;
 }
 
-// take a frame from the video feed
-function takeFrame() {
-    CANVAS_ELEM.getContext("2d").drawImage(VIDEO_ELEM, 0, 0, width, height);
-    let data = CANVAS_ELEM.toDataURL("image/png");
-    let img = PHOTO_ELEM;
-    img.src = data;
+// detect digits
+function detectDigits(src) {
+    let digits = [];
+    for (let i = 0; i < 9; ++i) {
+        for (let j = 0; j < 9; ++j) {
+            let cell = src.roi(new cv.Rect(i * cellsize, j * cellsize, cellsize, cellsize)); // split the image into 81 cells
+            digits.push(detectDigit(cell));
+        }
+    }
+    console.log(digits);
+    return digits;
 }
 
+// detect single digit from cell slice
+function detectDigit(src) {
+    scores = [];
+    for (let i=0; i<10; i++) {
+        let digit = cv.imread(document.getElementById(`digit-${i}`));
+        let result = new cv.Mat();
+
+        let digit_cvt = new cv.Mat();
+        cv.cvtColor(digit, digit_cvt, cv.COLOR_RGBA2GRAY, 0);
+        digit.delete();
+
+        cv.matchTemplate(src, digit_cvt, result, cv.TM_CCOEFF_NORMED, new cv.Mat());
+        let avg = cv.mean(result)[0];
+        result.delete();
+        digit_cvt.delete();
+
+        scores.push(avg);
+    }
+    return scores.indexOf(Math.max(...scores));
+}
+
+// draw the digits on the image
+function drawDigits(src, digits) {
+    let font = cv.FONT_HERSHEY_SIMPLEX;
+    let color = new cv.Scalar(255, 0, 0, 255);
+    for (let i = 0; i < 9; ++i) {
+        for (let j = 0; j < 9; ++j) {
+            let digit = digits[i * 9 + j];
+            cv.putText(src, digit.toString(), new cv.Point(i * cellsize + 10, j * cellsize + 40), font, 1, color, 2, cv.LINE_AA, false);
+        }
+    }
+}
+
+// main loop
 function cameraLoop() {
     takeFrame();
     PHOTO_ELEM.onload = () => {
@@ -194,6 +246,7 @@ function cameraLoop() {
 
         if (bounds) {
             let transformed = transform(binary, bounds);
+            //drawDigits(transformed, detectDigits(transformed));
             cv.imshow(TRANSFORMED_ELEM, transformed);
             transformed.delete();
         }
@@ -202,8 +255,7 @@ function cameraLoop() {
         binary.delete();
         contours.delete();
     };
-    //requestAnimationFrame(cameraLoop);
 }
 
 startup();
-setInterval(cameraLoop, 50);
+setInterval(cameraLoop, cellsize);
