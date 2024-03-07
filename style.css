@@ -9,5 +9,6 @@ html, body {
 #camera-feed {
 }
 
-#camera-canvas {
+#camera-canvas, #camera-image-raw, #camera-canvas-processed, #camera-image-processed {
+    display: none;
 }

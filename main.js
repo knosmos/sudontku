@@ -4,6 +4,7 @@ let PHOTO_ELEM = document.getElementById("camera-image-raw");
 let PROCESSED_ELEM = document.getElementById("camera-canvas-processed");
 let PROCESSED_IMAGE_ELEM = document.getElementById("camera-image-processed");
 let BOUNDED_PROCESSED_ELEM = document.getElementById("canvas-bounded-processed");
+let TRANSFORMED_ELEM = document.getElementById("canvas-transformed");
 
 let streaming = false;
 let width;
@@ -130,12 +131,17 @@ function getGridBounds(contours) {
 }
 
 function transform(src, bounds) {
-    let dst = cv.Mat.zeros(src.rows, src.cols, src.type());
+    let dst = cv.Mat.zeros(252, 252, src.type());
     let pts1 = cv.matFromArray(4, 1, cv.CV_32FC2, [bounds.data32S[0], bounds.data32S[1], bounds.data32S[2], bounds.data32S[3], bounds.data32S[4], bounds.data32S[5], bounds.data32S[6], bounds.data32S[7]]);
-    let pts2 = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, src.cols, 0, src.cols, src.rows, 0, src.rows]);
+    let pts2 = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, 0, 252, 252, 252, 252, 0]);
     let M = cv.getPerspectiveTransform(pts1, pts2);
     cv.warpPerspective(src, dst, M, dst.size(), cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
-    return dst;
+
+    let flipped = new cv.Mat();
+    cv.flip(dst, flipped, 1);
+    dst.delete();
+
+    return flipped;
 }
 
 function takeFrame() {
@@ -151,8 +157,16 @@ function cameraLoop() {
         let binary = preprocess();
         let contours = getContours(binary);
         let bounds = getGridBounds(contours);
+        
         let bounded_binary = drawContour(bounds, binary);
         cv.imshow(BOUNDED_PROCESSED_ELEM, bounded_binary);
+
+        if (bounds) {
+            let transformed = transform(binary, bounds);
+            cv.imshow(TRANSFORMED_ELEM, transformed);
+            transformed.delete();
+        }
+
         bounded_binary.delete();
         binary.delete();
         contours.delete();
