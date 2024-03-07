@@ -6,9 +6,6 @@ html, body {
     /*overflow: hidden;*/
 }
 
-#camera-feed {
-}
-
-#camera-canvas, #camera-image-raw, #camera-canvas-processed, #camera-image-processed {
+#camera-feed, #camera-canvas, #camera-image-raw, #camera-canvas-processed, #camera-image-processed, #digit-examples {
     display: none;
 }

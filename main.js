@@ -62,6 +62,9 @@ function startup() {
 
                 video.setAttribute("width", width);
                 video.setAttribute("height", height);
+                video.setAttribute('autoplay', ''); // required for iOS
+                video.setAttribute('muted', '');
+                video.setAttribute('playsinline', '');
 
                 canvas.setAttribute("width", width);
                 canvas.setAttribute("height", height);
