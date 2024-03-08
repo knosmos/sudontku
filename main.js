@@ -268,7 +268,7 @@ function detectDigit(src) {
 function drawDigits(src, digits, original) {
     let font = cv.FONT_HERSHEY_SIMPLEX;
     let color = new cv.Scalar(0, 48, 99, 255);
-    let color2 = new cv.Scalar(95, 124, 156, 255);
+    let color2 = new cv.Scalar(33, 114, 204, 100);
     for (let i = 0; i < 9; ++i) {
         for (let j = 0; j < 9; ++j) {
             let digit = digits[i * 9 + j];
@@ -292,7 +292,7 @@ function solve(board) {
             for (let j = 1; j <= 9; j++) {
                 if (isValid(board, i, j)) {
                     board[i] = j;
-                    let res = solve(board);
+                    let res = solve(board); // recursive try to solve
                     if (res != false) {
                         return res;
                     }
@@ -306,6 +306,7 @@ function solve(board) {
 }
 
 function isValid(board, i, j) {
+    // test rows and columns
     let row = Math.floor(i / 9);
     let col = i % 9;
     for (let k = 0; k < 9; k++) {
@@ -313,6 +314,7 @@ function isValid(board, i, j) {
             return false;
         }
     }
+    // test 3x3 square
     let startRow = Math.floor(row / 3) * 3;
     let startCol = Math.floor(col / 3) * 3;
     for (let k = startRow; k < startRow + 3; k++) {

@@ -1,21 +1,20 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Sudo Ku</title>
+        <title>su-don't-ku</title>
         <link rel="stylesheet" type="text/css" href="style.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <script src="opencv.js"></script>
     </head>
     <body>
-        <button id="start-button">Start Camera</button>
+        <!-- HEADER TEXT -->        
         <div id="splash">
             <p id="title">su-don't-ku</p>
-            <p>build 21</p>
+            <p>build 22</p>
             <p>by knosmos</p>
-            <button id="capture-button">Solve</button>
-            <button id="back-button">Back</button>            
         </div>
 
+        <!-- CAMERA AND IMAGE PROCESSING -->
         <video id="camera-feed" autoplay playsinline muted>Waiting for camera feed...</video>
         <canvas id="camera-canvas"></canvas>
         <img id="camera-image-raw">
@@ -24,6 +23,12 @@
         <canvas id="canvas-bounded-processed"></canvas>
         <canvas id="canvas-transformed"></canvas>
 
+        <!-- UI CONTROLS -->
+        <button id="start-button">Start Camera</button>
+        <button id="capture-button">Solve</button>
+        <button id="back-button">Back</button>   
+
+        <!-- TEMPLATE MATCHING DATA -->
         <div id="digit-examples">
             <img src="digits/0.png" id="digit-0">
             <img src="digits/1.png" id="digit-1">
@@ -37,6 +42,7 @@
             <img src="digits/9.png" id="digit-9">
         </div>
 
+        <!-- MAIN SCRIPT -->
         <script src="main.js" onload></script>
     </body>
 </html>
