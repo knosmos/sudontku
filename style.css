@@ -45,11 +45,13 @@ html, body {
     transition: all 0.5s;
 }
 
-h1 {
+#title {
     font-family: "Inter";
     font-size: 48pt;
     text-align: center;
     margin-top: 40vh;
+    padding: 0px;
+    margin-bottom: 0px;
 }
 
 button {
