@@ -350,6 +350,7 @@ let board;
 function runCapture() {
     takeFrame();
     PHOTO_ELEM.onload = () => {
+        alert("hi");
         try {
             // image processing
             binary = preprocess();
