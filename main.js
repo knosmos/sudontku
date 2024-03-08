@@ -7,6 +7,7 @@ let PROCESSED_IMAGE_ELEM = document.getElementById("camera-image-processed");
 let BOUNDED_PROCESSED_ELEM = document.getElementById("canvas-bounded-processed");
 let TRANSFORMED_ELEM = document.getElementById("canvas-transformed");
 
+let START_BUTTON = document.getElementById("start-button");
 let CAPTURE_BUTTON = document.getElementById("capture-button");
 
 // Video parameters
@@ -353,6 +354,6 @@ function runCapture() {
     bounds.delete();
 }
 
-startup();
+START_BUTTON.onclick = startup;
 setInterval(cameraLoop, cellsize);
 CAPTURE_BUTTON.onclick = runCapture;

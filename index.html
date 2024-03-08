@@ -6,7 +6,8 @@
         <script src="opencv.js"></script>
     </head>
     <body>
-        <video id="camera-feed">Waiting for camera feed...</video>
+
+        <video id="camera-feed" autoplay playsinline muted>Waiting for camera feed...</video>
         <canvas id="camera-canvas"></canvas>
         <img id="camera-image-raw">
         <canvas id="camera-canvas-processed"></canvas>
@@ -14,6 +15,7 @@
         <canvas id="canvas-bounded-processed"></canvas>
         <canvas id="canvas-transformed"></canvas>
 
+        <button id="start-button">Start Camera</button>
         <button id="capture-button">Solve</button>
 
         <div id="digit-examples">
