@@ -39,6 +39,9 @@ function startup() {
             navigator.mediaDevices
                 .getUserMedia({ video: true, audio: false })
                 .then((stream) => {
+                    video.setAttribute('autoplay', ''); // required for iOS
+                    video.setAttribute('muted', '');
+                    video.setAttribute('playsinline', '');
                     video.srcObject = stream;
                     video.play();
                     console.log("Loaded front camera feed");
@@ -62,9 +65,6 @@ function startup() {
 
                 video.setAttribute("width", width);
                 video.setAttribute("height", height);
-                video.setAttribute('autoplay', ''); // required for iOS
-                video.setAttribute('muted', '');
-                video.setAttribute('playsinline', '');
 
                 canvas.setAttribute("width", width);
                 canvas.setAttribute("height", height);
@@ -235,9 +235,6 @@ function detectDigit(src) {
 
         cv.matchTemplate(src, digit_cvt, result, cv.TM_CCOEFF_NORMED, new cv.Mat());
 
-        // imshow matching result
-        cv.imshow("result", result);
-
         let minMax = cv.minMaxLoc(result);
         let avg = minMax.maxVal;
 
@@ -329,12 +326,18 @@ function cameraLoop() {
         cv.imshow(BOUNDED_PROCESSED_ELEM, bounded_binary);
 
         bounded_binary.delete();
+        binary.delete();
+        bounds.delete();
         contours.delete();
     };
 }
 
 let board;
 function runCapture() {
+    binary = preprocess();
+    contours = getContours(binary);
+    bounds = getGridBounds(contours);
+
     let transformed = transform(binary, bounds);
     transformed_rgb = new cv.Mat();
     cv.cvtColor(transformed, transformed_rgb, cv.COLOR_RGBA2RGB, 0);
@@ -343,8 +346,11 @@ function runCapture() {
     solve(board);
     drawDigits(transformed_rgb, board, original);
     cv.imshow(TRANSFORMED_ELEM, transformed_rgb);
+
     transformed.delete();
     transformed_rgb.delete();
+    binary.delete();
+    bounds.delete();
 }
 
 startup();
