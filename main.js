@@ -9,6 +9,7 @@ let TRANSFORMED_ELEM = document.getElementById("canvas-transformed");
 
 let START_BUTTON = document.getElementById("start-button");
 let CAPTURE_BUTTON = document.getElementById("capture-button");
+let BACK_BUTTON = document.getElementById("back-button");
 
 // Video parameters
 let streaming = false;
@@ -84,6 +85,7 @@ function startup() {
         },
         false,
     );
+    START_BUTTON.style.display = "none";
 }
 
 // take a frame from the video feed
@@ -335,10 +337,12 @@ function cameraLoop() {
 
 let board;
 function runCapture() {
+    // image processing
     binary = preprocess();
     contours = getContours(binary);
     bounds = getGridBounds(contours);
 
+    // solution extraction
     let transformed = transform(binary, bounds);
     transformed_rgb = new cv.Mat();
     cv.cvtColor(transformed, transformed_rgb, cv.COLOR_RGBA2RGB, 0);
@@ -346,14 +350,33 @@ function runCapture() {
     let original = [...board];
     solve(board);
     drawDigits(transformed_rgb, board, original);
+
     cv.imshow(TRANSFORMED_ELEM, transformed_rgb);
 
     transformed.delete();
     transformed_rgb.delete();
     binary.delete();
     bounds.delete();
+
+    // fancy displaying
+    BOUNDED_PROCESSED_ELEM.style.bottom = "100vh";
+    BOUNDED_PROCESSED_ELEM.style.top = "-100vh";
+    CAPTURE_BUTTON.style.bottom = "100vh";
+    
+    TRANSFORMED_ELEM.style.bottom = "0px";
+    TRANSFORMED_ELEM.style.top = "0";
+    BACK_BUTTON.style.bottom = "10px";
 }
 
 START_BUTTON.onclick = startup;
 setInterval(cameraLoop, cellsize);
 CAPTURE_BUTTON.onclick = runCapture;
+BACK_BUTTON.onclick = () => {
+    BOUNDED_PROCESSED_ELEM.style.bottom = "0px";
+    BOUNDED_PROCESSED_ELEM.style.top = "0";
+    CAPTURE_BUTTON.style.bottom = "10px";
+    
+    TRANSFORMED_ELEM.style.bottom = "-100vh";
+    TRANSFORMED_ELEM.style.top = "100vh";
+    BACK_BUTTON.style.bottom = "-100vh";
+}
