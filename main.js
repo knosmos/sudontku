@@ -348,40 +348,42 @@ function cameraLoop() {
 
 let board;
 function runCapture() {
-    try {
-        // image processing
-        takeFrame();
-        binary = preprocess();
-        contours = getContours(binary);
-        bounds = getGridBounds(contours);
+    takeFrame();
+    PHOTO_ELEM.onload = () => {
+        try {
+            // image processing
+            binary = preprocess();
+            contours = getContours(binary);
+            bounds = getGridBounds(contours);
 
-        // solution extraction
-        let transformed = transform(binary, bounds);
-        transformed_rgb = new cv.Mat();
-        cv.cvtColor(transformed, transformed_rgb, cv.COLOR_RGBA2RGB, 0);
-        board = detectDigits(transformed);
-        let original = [...board];
-        solve(board);
-        drawDigits(transformed_rgb, board, original);
+            // solution extraction
+            let transformed = transform(binary, bounds);
+            transformed_rgb = new cv.Mat();
+            cv.cvtColor(transformed, transformed_rgb, cv.COLOR_RGBA2RGB, 0);
+            board = detectDigits(transformed);
+            let original = [...board];
+            solve(board);
+            drawDigits(transformed_rgb, board, original);
 
-        cv.imshow(TRANSFORMED_ELEM, transformed_rgb);
+            cv.imshow(TRANSFORMED_ELEM, transformed_rgb);
 
-        transformed.delete();
-        transformed_rgb.delete();
-        binary.delete();
-        bounds.delete();
+            transformed.delete();
+            transformed_rgb.delete();
+            binary.delete();
+            bounds.delete();
 
-        // fancy displaying
-        BOUNDED_PROCESSED_ELEM.style.bottom = "100vh";
-        BOUNDED_PROCESSED_ELEM.style.top = "-100vh";
-        CAPTURE_BUTTON.style.bottom = "100vh";
-        
-        TRANSFORMED_ELEM.style.bottom = "0px";
-        TRANSFORMED_ELEM.style.top = "0";
-        BACK_BUTTON.style.bottom = "10px";        
-    }
-    catch (err) {
-        alert(err);
+            // fancy displaying
+            BOUNDED_PROCESSED_ELEM.style.bottom = "100vh";
+            BOUNDED_PROCESSED_ELEM.style.top = "-100vh";
+            CAPTURE_BUTTON.style.bottom = "100vh";
+            
+            TRANSFORMED_ELEM.style.bottom = "0px";
+            TRANSFORMED_ELEM.style.top = "0";
+            BACK_BUTTON.style.bottom = "10px";        
+        }
+        catch (err) {
+            alert(err);
+        }
     }
 }
 
