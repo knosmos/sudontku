@@ -48,9 +48,9 @@ html, body {
 
 #title {
     font-family: "Inter";
-    font-size: 48pt;
+    font-size: 40pt;
     text-align: center;
-    margin-top: 40vh;
+    margin-top: 30vh;
     padding: 0px;
     margin-bottom: 0px;
 }
@@ -86,11 +86,12 @@ button {
 }
 
 #start-button {
-    top: 10px;
+    bottom: 10px;
 }
 
 #capture-button {
     bottom: 10px;
+    display: none;
 }
 
 #back-button {

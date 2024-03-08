@@ -86,6 +86,7 @@ function startup() {
         false,
     );
     START_BUTTON.style.display = "none";
+    CAPTURE_BUTTON.style.display = "block";
 }
 
 // take a frame from the video feed
@@ -138,7 +139,7 @@ function drawContour(contour, src) {
     let dst = new cv.Mat();
     cv.cvtColor(src, dst, cv.COLOR_GRAY2RGBA, 0);
     
-    let color = new cv.Scalar(255, 0, 0, 255);
+    let color = new cv.Scalar(255, 144, 25, 255);
     let vec = new cv.MatVector();
     vec.push_back(contour);
     cv.drawContours(dst, vec, 0, color, 2, 8, new cv.Mat(), 0);
@@ -267,8 +268,8 @@ function detectDigit(src) {
 // draw the digits on the image
 function drawDigits(src, digits, original) {
     let font = cv.FONT_HERSHEY_SIMPLEX;
-    let color = new cv.Scalar(0, 48, 99, 255);
-    let color2 = new cv.Scalar(33, 114, 204, 100);
+    let color = new cv.Scalar(0, 48, 99, 255); // solved squares
+    let color2 = new cv.Scalar(255, 144, 25, 100); // original squares
     for (let i = 0; i < 9; ++i) {
         for (let j = 0; j < 9; ++j) {
             let digit = digits[i * 9 + j];
