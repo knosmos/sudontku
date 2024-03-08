@@ -256,8 +256,8 @@ function detectDigit(src) {
 // draw the digits on the image
 function drawDigits(src, digits, original) {
     let font = cv.FONT_HERSHEY_SIMPLEX;
-    let color = new cv.Scalar(255, 0, 0, 255);
-    let color2 = new cv.Scalar(0, 255, 0, 255);
+    let color = new cv.Scalar(0, 48, 99, 255);
+    let color2 = new cv.Scalar(252, 157, 3, 255);
     for (let i = 0; i < 9; ++i) {
         for (let j = 0; j < 9; ++j) {
             let digit = digits[i * 9 + j];
