@@ -4,6 +4,7 @@ html, body {
     height: 100%;
     width: 100%;
     background-color: #f2f2f2;
+    overflow: hidden;
 }
 
 @font-face {
@@ -52,6 +53,20 @@ html, body {
     margin-top: 40vh;
     padding: 0px;
     margin-bottom: 0px;
+}
+
+p {
+    font-family: "Inter";
+    font-size: 16pt;
+    text-align: center;
+    margin-top: 0px;
+    padding: 0px;
+    margin-bottom: 0px;
+    color: rgb(56, 56, 56);
+}
+
+a {
+    color: rgb(145, 145, 145);
 }
 
 button {

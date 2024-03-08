@@ -7,6 +7,14 @@
         <script src="opencv.js"></script>
     </head>
     <body>
+        <button id="start-button">Start Camera</button>
+        <div id="splash">
+            <p id="title">su-don't-ku</p>
+            <p>build 21</p>
+            <p>by knosmos</p>
+            <button id="capture-button">Solve</button>
+            <button id="back-button">Back</button>            
+        </div>
 
         <video id="camera-feed" autoplay playsinline muted>Waiting for camera feed...</video>
         <canvas id="camera-canvas"></canvas>
@@ -15,11 +23,6 @@
         <img id="camera-image-processed">
         <canvas id="canvas-bounded-processed"></canvas>
         <canvas id="canvas-transformed"></canvas>
-
-        <button id="start-button">Start Camera</button>
-        <p id="title">su-don't-ku</p>
-        <button id="capture-button">Solve</button>
-        <button id="back-button">Back</button>
 
         <div id="digit-examples">
             <img src="digits/0.png" id="digit-0">
