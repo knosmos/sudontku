@@ -349,6 +349,7 @@ function cameraLoop() {
 let board;
 function runCapture() {
     takeFrame();
+    clearInterval(cameraFeedInterval);
     PHOTO_ELEM.onload = () => {
         alert("hi");
         try {
@@ -380,7 +381,7 @@ function runCapture() {
             
             TRANSFORMED_ELEM.style.bottom = "0px";
             TRANSFORMED_ELEM.style.top = "0";
-            BACK_BUTTON.style.bottom = "10px";        
+            BACK_BUTTON.style.bottom = "10px";    
         }
         catch (err) {
             alert(err);
@@ -389,8 +390,9 @@ function runCapture() {
 }
 
 START_BUTTON.onclick = startup;
-setInterval(cameraLoop, cellsize);
+let cameraFeedInterval = setInterval(cameraLoop, cellsize);
 CAPTURE_BUTTON.onclick = runCapture;
+
 BACK_BUTTON.onclick = () => {
     BOUNDED_PROCESSED_ELEM.style.bottom = "0px";
     BOUNDED_PROCESSED_ELEM.style.top = "0";
@@ -399,4 +401,6 @@ BACK_BUTTON.onclick = () => {
     TRANSFORMED_ELEM.style.bottom = "-100vh";
     TRANSFORMED_ELEM.style.top = "100vh";
     BACK_BUTTON.style.bottom = "-100vh";
+
+    cameraFeedInterval = setInterval(cameraLoop, cellsize);
 }
