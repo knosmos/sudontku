@@ -3,7 +3,12 @@ html, body {
     padding: 0;
     height: 100%;
     width: 100%;
-    /*overflow: hidden;*/
+    background-color: #f2f2f2;
+}
+
+@font-face {
+    font-family: "Inter";
+    src: url("assets/inter.ttf");
 }
 
 #camera-feed, #camera-canvas, #camera-image-raw, #camera-canvas-processed, #camera-image-processed, #digit-examples {
@@ -41,16 +46,19 @@ html, body {
 }
 
 button {
-    background-color: #cccccc;
+    background-color: #151515;
     border-radius: 5px;
-    padding: 5px;
+    padding: 10px;
     position: fixed;
     left: 0;
     right: 0;
     border: none;
     margin: auto;
-    width: 100px;
-    transition: all 0.5s;    
+    width: 200px;
+    transition: all 0.5s;
+    font-size: 16pt;
+    font-family: "Inter";
+    color: #ffffff;
 }
 
 #start-button {
