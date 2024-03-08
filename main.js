@@ -155,6 +155,7 @@ function getGridBounds(contours) {
         let perimeter = cv.arcLength(contours.get(i), true);
         let poly = new cv.Mat();
         cv.approxPolyDP(contours.get(i), poly, smoothing * perimeter, true);
+        let onEdge = false;
         if (poly.size().height == 4) { // check for four-sidedness
             // detect square (this avoids detecting the paper/computer's edges)
             let side_lengths = [];
@@ -163,8 +164,18 @@ function getGridBounds(contours) {
                 let y1 = poly.data32S[j * 2 + 1];
                 let x2 = poly.data32S[(j * 2 + 2) % 8];
                 let y2 = poly.data32S[(j * 2 + 3) % 8];
+
+                // if any point is on the edge, we reject the contour
+                if (x1 == 0 || x1 == width - 1 || y1 == 0 || y1 == height - 1 || x2 == 0 || x2 == width - 1 || y2 == 0 || y2 == height - 1) {
+                    onEdge = true;
+                }
+
                 let side = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
                 side_lengths.push(side);
+            }
+
+            if (onEdge) {
+                continue;
             }
             
             // check for squareness
@@ -337,6 +348,8 @@ function cameraLoop() {
 
 let board;
 function runCapture() {
+    alert("capturing!");
+
     // image processing
     binary = preprocess();
     contours = getContours(binary);

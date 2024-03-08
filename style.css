@@ -45,6 +45,13 @@ html, body {
     transition: all 0.5s;
 }
 
+h1 {
+    font-family: "Inter";
+    font-size: 48pt;
+    text-align: center;
+    margin-top: 40vh;
+}
+
 button {
     background-color: #151515;
     border-radius: 5px;

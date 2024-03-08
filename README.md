@@ -1,4 +1,4 @@
-# Sudo Ku!
+# su-don't-ku
 
 Browser-based OCR sudoku solver
 
@@ -7,5 +7,5 @@ Browser-based OCR sudoku solver
 - [x] Image preprocessing
 - [x] Board detection and perspective transformation
 - [x] Template-matching digit recognition
-- [ ] Sudoku solver
+- [x] Sudoku solver
 - [ ] Clean UI
