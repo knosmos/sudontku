@@ -115,7 +115,7 @@ function preprocess() {
 
     // morphological operations for cleanup and noise reduction
     let closed = new cv.Mat();
-    let kernel = cv.Mat.ones(3, 3, cv.CV_8U);
+    let kernel = cv.Mat.ones(2, 2, cv.CV_8U);
     cv.morphologyEx(binary, closed, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 1, cv.BORDER_CONSTANT, cv.morphologyDefaultBorderValue());
 
     // display the processed image
@@ -267,6 +267,7 @@ function detectDigit(src) {
 
         scores.push(best);
     }
+    /*
     for (let i=1; i<10; i++) {
         let digit = cv.imread(document.getElementById(`digit-${i}2`));
         let result = new cv.Mat();
@@ -284,9 +285,9 @@ function detectDigit(src) {
         digit_cvt.delete();
 
         scores[i-1] += best;
-    }
+    }*/
     console.log(scores);
-    if (Math.max(...scores) < 0.4) {
+    if (Math.max(...scores) < 0.2) {
         return 0;
     }
     return scores.indexOf(Math.max(...scores)) + 1;
