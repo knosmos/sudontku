@@ -11,6 +11,8 @@ let START_BUTTON = document.getElementById("start-button");
 let CAPTURE_BUTTON = document.getElementById("capture-button");
 let BACK_BUTTON = document.getElementById("back-button");
 
+let SPLASH_ELEM = document.getElementById("splash");
+
 // Video parameters
 let streaming = false;
 let width;
@@ -87,6 +89,7 @@ function startup() {
     );
     START_BUTTON.style.display = "none";
     CAPTURE_BUTTON.style.display = "block";
+    SPLASH_ELEM.style.opacity = 0;
 }
 
 // take a frame from the video feed
@@ -110,8 +113,13 @@ function preprocess() {
     let binary = new cv.Mat();
     cv.threshold(gray, binary, 150, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
 
+    // morphological operations for cleanup and noise reduction
+    let closed = new cv.Mat();
+    let kernel = cv.Mat.ones(3, 3, cv.CV_8U);
+    cv.morphologyEx(binary, closed, cv.MORPH_OPEN, kernel, new cv.Point(-1, -1), 1, cv.BORDER_CONSTANT, cv.morphologyDefaultBorderValue());
+
     // display the processed image
-    cv.imshow(PROCESSED_ELEM, binary);
+    cv.imshow(PROCESSED_ELEM, closed);
 
     // save image to image element
     let data = PROCESSED_ELEM.toDataURL("image/png");
@@ -119,8 +127,9 @@ function preprocess() {
 
     src.delete();
     gray.delete();
+    binary.delete();
 
-    return binary;
+    return closed;
 }
 
 // Get the contours of the binary image
@@ -251,15 +260,33 @@ function detectDigit(src) {
         cv.matchTemplate(src, digit_cvt, result, cv.TM_CCOEFF_NORMED, new cv.Mat());
 
         let minMax = cv.minMaxLoc(result);
-        let avg = minMax.maxVal;
+        let best = minMax.maxVal;
 
         result.delete();
         digit_cvt.delete();
 
-        scores.push(avg);
+        scores.push(best);
+    }
+    for (let i=1; i<10; i++) {
+        let digit = cv.imread(document.getElementById(`digit-${i}2`));
+        let result = new cv.Mat();
+
+        let digit_cvt = new cv.Mat();
+        cv.cvtColor(digit, digit_cvt, cv.COLOR_RGBA2GRAY, 0);
+        digit.delete();
+
+        cv.matchTemplate(src, digit_cvt, result, cv.TM_CCOEFF_NORMED, new cv.Mat());
+
+        let minMax = cv.minMaxLoc(result);
+        let best = minMax.maxVal;
+
+        result.delete();
+        digit_cvt.delete();
+
+        scores[i-1] += best;
     }
     console.log(scores);
-    if (Math.max(...scores) < 0.2) {
+    if (Math.max(...scores) < 0.4) {
         return 0;
     }
     return scores.indexOf(Math.max(...scores)) + 1;

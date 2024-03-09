@@ -97,3 +97,7 @@ button {
 #back-button {
     bottom: -100%;
 }
+
+#splash {
+    transition: all 0.5s;
+}
