@@ -4,16 +4,10 @@
         <title>su-don't-ku</title>
         <link rel="stylesheet" type="text/css" href="style.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" href="assets/icon.png">
         <script src="opencv.js"></script>
     </head>
     <body>
-        <!-- HEADER TEXT -->        
-        <div id="splash">
-            <p id="title">su-don't-ku</p>
-            <p>build 25</p>
-            <p>by knosmos</p>
-        </div>
-
         <!-- CAMERA AND IMAGE PROCESSING -->
         <video id="camera-feed" autoplay playsinline muted>Waiting for camera feed...</video>
         <canvas id="camera-canvas"></canvas>
@@ -27,6 +21,17 @@
         <button id="start-button">Start Camera</button>
         <button id="capture-button">Solve</button>
         <button id="back-button">Back</button>   
+
+        <!-- HEADER TEXT -->        
+        <div id="splash">
+            <p id="title">su-don't-ku</p>
+            <p>
+                <br><br>
+                <img src="assets/icon.png" id="icon"><br><br>
+                build 27<br>
+                by <a href="knosmos.github.io">knosmos</a> [<a href="https://github.com/knosmos/sudontku">source code</a>]
+            </p>
+        </div>
 
         <!-- TEMPLATE MATCHING DATA -->
         <div id="digit-examples">

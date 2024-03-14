@@ -90,6 +90,10 @@ function startup() {
     START_BUTTON.style.display = "none";
     CAPTURE_BUTTON.style.display = "block";
     SPLASH_ELEM.style.opacity = 0;
+    setTimeout(() => {
+        SPLASH_ELEM.style.display = "none";
+    }, 500);
+    BOUNDED_PROCESSED_ELEM.style.display = "block";
 }
 
 // take a frame from the video feed

@@ -29,6 +29,7 @@ html, body {
     -o-object-fit: contain;
     object-fit: contain;
     transition: all 0.5s;
+    display: none;
 }
 
 #canvas-transformed {
@@ -50,7 +51,7 @@ html, body {
     font-family: "Inter";
     font-size: 40pt;
     text-align: center;
-    margin-top: 30vh;
+    margin-top: 20vh;
     padding: 0px;
     margin-bottom: 0px;
 }
@@ -83,6 +84,7 @@ button {
     font-size: 16pt;
     font-family: "Inter";
     color: #ffffff;
+    cursor: pointer;
 }
 
 #start-button {
@@ -100,4 +102,10 @@ button {
 
 #splash {
     transition: all 0.5s;
+    z-index: 100;
+    position: relative;
+}
+
+#icon {
+    width: 150px;
 }
